@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bonbonmaschine — Zahlen zerlegen bis 100 | Förderfreude Games</title>
+<style>
+  :root{
+    --cream:#faf5ea;
+    --cream-dark:#efe2c9;
+    --ink:#2f3b45;
+    --muted:#6d7a85;
+    --panel:#fffdf8;
+    --panel-edge:rgba(47,59,69,.16);
+    --petrol:#1f6b6f;
+    --petrol-dark:#134a4d;
+    --petrol-tint:#e0eeee;
+    --turquoise:#3fb6b0;
+    --turquoise-dark:#2a8f8a;
+    --blue:#5a8fc7;
+    --blue-dark:#3f6a9c;
+    --yellow:#f2c53d;
+    --yellow-dark:#c99a15;
+    --coral:#e8735a;
+    --coral-dark:#c1523b;
+    --violet:#8a6bb0;
+    --violet-dark:#674f8a;
+    --violet-tint:#ece3f5;
+    --glow: 0 0 10px rgba(63,182,176,.7), 0 0 4px rgba(255,255,255,.6);
+    --qu: clamp(13px, 2.2vw, 20px);
+    --font-display: ui-rounded, 'Segoe UI Rounded', 'SF Pro Rounded', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; height:100%; overscroll-behavior:none; }
+  body{
+    font-family:var(--font-body);
+    background:linear-gradient(180deg, #eaf3f2 0%, var(--cream) 45%, var(--cream-dark) 100%);
+    color:var(--ink);
+    height:100vh; height:100dvh;
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    user-select:none; -webkit-user-select:none;
+  }
+  button{ font-family:inherit; cursor:pointer; border:none; background:none; padding:0; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; } }
+
+  header{ flex-shrink:0; display:flex; align-items:center; justify-content:space-between; padding:1.3vh 3vw 0.5vh; gap:2vw; }
+  .brand{ font-family:var(--font-display); font-weight:800; font-size:clamp(13px,2vw,18px); color:var(--ink); display:flex; align-items:center; gap:1.2vw; }
+  .header-btns{ display:flex; gap:2vw; }
+  .icon-btn{
+    width:clamp(34px,4.4vw,44px); height:clamp(34px,4.4vw,44px);
+    border-radius:50%; background:var(--panel); border:1.6px solid var(--panel-edge);
+    display:flex; align-items:center; justify-content:center; font-size:clamp(15px,1.9vw,19px);
+    transition:transform .1s ease; font-weight:800; color:var(--ink);
+  }
+  .icon-btn:active{ transform:scale(.9); }
+  .icon-btn[aria-pressed="false"]{ opacity:.5; }
+
+  .screen{ flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .screen[hidden]{ display:none; }
+
+  /* ---------- Start ---------- */
+  #screen-start{ gap:1.2vh; padding:1vh 4vw; text-align:center; width:100%; overflow-y:auto; }
+  .hero-machine{ width:min(38vw,155px); height:auto; flex-shrink:0; }
+  .title-big{ font-family:var(--font-display); font-weight:800; font-size:clamp(26px,5vw,46px); color:var(--petrol); margin:0; letter-spacing:.5px; }
+  .subtitle-big{ font-family:var(--font-display); font-weight:700; font-size:clamp(13px,2vw,18px); color:var(--ink); margin:0; }
+  .intro-line{ font-size:clamp(12px,1.7vw,15px); color:var(--muted); font-weight:600; margin:0 0 .4vh; max-width:480px; }
+
+  .range-choices{ display:flex; gap:2.4vw; flex-wrap:wrap; justify-content:center; max-width:640px; }
+  .range-card{
+    background:var(--panel); border:2.6px solid var(--panel-edge); border-radius:18px;
+    padding:2.2vh 4vw; min-width:min(150px,32vw); flex:1;
+    box-shadow:0 6px 0 rgba(47,59,69,.14);
+    transition:transform .1s ease;
+  }
+  .range-card .big{ display:block; font-family:var(--font-display); font-weight:800; font-size:clamp(17px,2.6vw,23px); color:var(--ink); }
+  .range-card .sub{ display:block; font-size:clamp(9px,1.3vw,11px); color:var(--muted); font-weight:600; margin-top:.5vh; }
+  .range-card.selected{ border-color:var(--petrol); background:var(--petrol-tint); box-shadow:0 6px 0 var(--petrol-dark); }
+  .range-card:active{ transform:translateY(3px); box-shadow:0 2px 0 rgba(47,59,69,.14); }
+  .range-card.selected:active{ box-shadow:0 2px 0 var(--petrol-dark); }
+
+  .start-btn{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(17px,2.6vw,23px);
+    color:#fff; background:var(--petrol); border-radius:999px; padding:1.7vh 9vw;
+    box-shadow:0 7px 0 var(--petrol-dark); transition:transform .1s ease, opacity .2s ease;
+    margin-top:.3vh;
+  }
+  .start-btn:active{ transform:translateY(4px); box-shadow:0 3px 0 var(--petrol-dark); }
+  .start-btn[disabled]{ opacity:.4; box-shadow:0 7px 0 rgba(80,90,95,.35); }
+  .brand-footer{ font-size:clamp(10px,1.3vw,12px); color:var(--muted); font-weight:700; margin-top:.2vh; }
+
+  /* ---------- Spiel ---------- */
+  #screen-game{ width:100%; gap:1.1vh; padding:0 3vw; padding-bottom:max(9%, 120px); }
+  .top-row{ display:flex; align-items:center; justify-content:center; gap:2vw; flex-wrap:wrap; }
+  .energy-track{ width:min(50vw,280px); height:10px; border-radius:999px; background:var(--panel-edge); overflow:hidden; position:relative; }
+  .energy-fill{ height:100%; background:linear-gradient(90deg, var(--turquoise), var(--petrol)); width:0%; transition:width .4s ease; box-shadow:var(--glow); }
+  .progress-num{ font-family:var(--font-display); font-weight:800; font-size:clamp(12px,1.8vw,16px); color:var(--ink); background:var(--panel); border:1.6px solid var(--panel-edge); border-radius:999px; padding:.5vh 3.4vw; }
+
+  .task-wrap{ flex:1; min-height:0; width:100%; display:flex; align-items:center; justify-content:center; padding:0.3vh 0; }
+  .task-stage{
+    position:relative; overflow:hidden; border-radius:26px; width:100%; height:100%;
+    background:var(--panel);
+    box-shadow:0 10px 26px -14px rgba(47,59,69,.35);
+    display:flex; flex-direction:column; align-items:center;
+    padding:1.3vh 3vw 1.5vh; gap:0.7vh;
+  }
+  .stage-glow{ position:absolute; inset:0; opacity:.1; pointer-events:none; z-index:0; }
+
+  .scene-label{ flex-shrink:0; display:flex; align-items:center; gap:2vw; position:relative; z-index:1; }
+  .scene-icon{ font-size:clamp(18px,2.8vw,24px); }
+  .scene-name{ font-family:var(--font-display); font-weight:800; font-size:clamp(12px,1.8vw,16px); color:var(--muted); }
+
+  .prompt-row{ flex-shrink:0; display:flex; align-items:center; gap:2vw; position:relative; z-index:1; }
+  .prompt-text{ font-family:var(--font-display); font-weight:800; font-size:clamp(17px,2.8vw,25px); color:var(--ink); text-align:center; }
+  .prompt-sub{ flex-shrink:0; font-family:var(--font-display); font-weight:700; font-size:clamp(11px,1.6vw,14px); color:var(--muted); text-align:center; position:relative; z-index:1; }
+  .speak-btn{
+    flex-shrink:0; width:clamp(36px,4.8vw,46px); height:clamp(36px,4.8vw,46px); border-radius:50%;
+    background:var(--yellow); opacity:.22; border:2px solid var(--yellow-dark); color:var(--yellow-dark);
+    display:flex; align-items:center; justify-content:center; font-size:clamp(15px,2.2vw,20px);
+    transition:transform .1s ease;
+  }
+  .speak-btn{ background:#fdf3d6; opacity:1; }
+  .speak-btn:active{ transform:scale(.9); }
+
+  .task-body{ flex:1; min-height:0; width:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.8vh; overflow:hidden; position:relative; z-index:1; }
+
+  /* ---------- Zahlenmaschine ---------- */
+  .machine-wrap{ display:flex; flex-direction:column; align-items:center; width:100%; height:100%; min-height:0; gap:.6vh; }
+  .ganzes-row{ flex-shrink:0; display:flex; align-items:center; gap:2vw; }
+  .ganzes-label{ font-family:var(--font-display); font-weight:700; font-size:clamp(9px,1.3vw,11px); color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  .ganzes-num{ font-family:var(--font-display); font-weight:800; font-size:clamp(30px,5vw,46px); color:var(--petrol); line-height:1; }
+  .machine-svg-wrap{ flex-shrink:1; min-height:0; width:min(52%,200px); aspect-ratio:1/1; position:relative; }
+  .machine-svg-wrap svg{ width:100%; height:100%; display:block; }
+  .machine-pulse{ transition:opacity .25s ease, r .5s ease; }
+  .machine-active .machine-pulse{ opacity:0.28; }
+  .machine-dome-balls{
+    position:absolute; left:27%; top:20%; width:46%; height:35%; z-index:2;
+    display:flex; flex-wrap:wrap; align-content:center; justify-content:center; gap:1px;
+    overflow:hidden;
+  }
+
+  .teile-row{ flex-shrink:0; display:flex; gap:3vw; align-items:flex-end; justify-content:center; width:100%; }
+  .teil-box{
+    display:flex; flex-direction:column; align-items:center; gap:.5vh;
+    background:var(--panel); border:2.4px solid var(--panel-edge);
+    clip-path:polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%);
+    border-radius:0 0 10px 10px;
+    padding:1.6vh 2.4vw 1vh; min-width:20vw; position:relative;
+  }
+  .teil-box::before{
+    content:''; position:absolute; top:-3px; left:22%; width:56%; height:5px;
+    background:var(--panel-edge); border-radius:2px;
+  }
+  .teil-box.active-input{ border-color:var(--turquoise); box-shadow:0 0 0 3px var(--petrol-tint); }
+  .teil-box-tap{ cursor:pointer; transition:transform .1s ease, border-color .15s ease, background .15s ease; border-width:3px; background:var(--cream-dark); }
+  .teil-box-tap:active{ transform:scale(.97); }
+  .teil-box-tap:not(.teil-box-empty-pool){ border-color:var(--turquoise); }
+  .teil-box-tap.teil-box-empty-pool{ cursor:default; background:var(--panel); }
+  .pool-zone{ flex-shrink:0; display:flex; flex-direction:column; align-items:center; gap:.3vh; width:100%; }
+  .pool-label{ font-family:var(--font-display); font-weight:700; font-size:clamp(9px,1.3vw,11px); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .pool-balls{ display:flex; flex-wrap:wrap; gap:2px; justify-content:center; max-width:70vw; min-height:calc(var(--qu)*1.2); align-items:center; }
+  .teil-label{ font-family:var(--font-display); font-weight:700; font-size:clamp(9px,1.2vw,10.5px); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .teil-num{ font-family:var(--font-display); font-weight:800; font-size:clamp(22px,3.6vw,32px); color:var(--ink); min-height:1.2em; }
+  .teil-num.unknown{ color:var(--coral); }
+  .teil-balls{ display:flex; flex-wrap:wrap; gap:2px; justify-content:center; max-width:22vw; min-height:calc(var(--qu)*1.2); align-items:center; }
+
+  .energy-ball{
+    width:var(--qu); height:var(--qu); border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #eafffe, var(--turquoise) 55%, var(--petrol-dark) 100%);
+    box-shadow:var(--glow);
+    display:inline-block;
+    transition:transform .12s ease;
+  }
+  .energy-ball.dim{ background:radial-gradient(circle at 35% 30%, #f3f3f3, #cfd6d8 55%, #a9b2b5 100%); box-shadow:none; }
+  .energy-ball.pool{ cursor:pointer; }
+  .energy-ball.pool:active{ transform:scale(.85); }
+
+  .plus-sign{ font-family:var(--font-display); font-weight:800; font-size:clamp(20px,3vw,28px); color:var(--muted); align-self:center; padding-bottom:1.4vh; }
+
+  /* Freie Kugel-Pool-Leiste */
+  .ball-pool-row{ flex-shrink:0; display:flex; gap:1.6vw; flex-wrap:wrap; justify-content:center; max-width:80%; }
+
+  /* Auswahl-Karten (Multiple Choice) */
+  .choice-row{ display:flex; gap:2.4vw; flex-wrap:wrap; justify-content:center; max-width:760px; }
+  .choice-card{
+    background:var(--panel); border:3px solid var(--panel-edge); border-radius:16px;
+    padding:1.4vh 2.6vw; display:flex; flex-direction:column; align-items:center; gap:.5vh;
+    box-shadow:0 4px 0 rgba(47,59,69,.12); transition:transform .1s ease;
+    min-width:90px;
+  }
+  .choice-card:active{ transform:translateY(3px); }
+  .choice-card.wrong{ animation:shake .4s ease; border-color:var(--coral); }
+  .choice-card.correct-pulse{ animation:pulse .5s ease; border-color:var(--turquoise); background:var(--petrol-tint); }
+  .choice-card.picked{ border-color:var(--violet); background:var(--violet-tint); }
+  .choice-split{ font-family:var(--font-display); font-weight:800; font-size:clamp(19px,2.8vw,26px); color:var(--ink); white-space:nowrap; }
+
+  /* Zahlen-Tastenfeld (bis 100 Eingabe) */
+  .keypad{ display:grid; grid-template-columns:repeat(3, 1fr); gap:var(--kp-gap, 1.2vh) 1.6vw; max-width:260px; width:100%; }
+  .keypad-btn{
+    background:var(--panel); border:2.2px solid var(--panel-edge); border-radius:12px;
+    font-family:var(--font-display); font-weight:800; font-size:var(--kp-font, clamp(18px,2.6vw,24px)); color:var(--ink);
+    padding:var(--kp-pad, 1.4vh) 0; transition:transform .1s ease;
+  }
+  .keypad-btn:active{ transform:scale(.92); background:var(--petrol-tint); }
+  .keypad-btn.wide{ grid-column:span 1; }
+  .input-display{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(24px,3.6vw,32px); color:var(--petrol);
+    min-width:16vw; text-align:center; border-bottom:3px solid var(--petrol); padding-bottom:.3vh;
+  }
+
+  /* Mehrere-Zerlegungen Fortschrittsliste */
+  .found-row{ display:flex; gap:1.6vw; flex-wrap:wrap; justify-content:center; max-width:80%; }
+  .found-chip{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(13px,1.8vw,16px);
+    background:var(--petrol-tint); border:2px solid var(--turquoise); border-radius:999px;
+    padding:.7vh 3vw; color:var(--petrol-dark);
+  }
+  .found-chip.pending{ background:var(--cream-dark); border-color:var(--panel-edge); color:var(--muted); opacity:.55; }
+
+  .fertig-row{ flex-shrink:0; display:flex; gap:2.4vw; align-items:center; position:relative; z-index:1; }
+  .reset-btn{
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; gap:1.4vw;
+    background:var(--panel); border:2.2px solid var(--panel-edge); border-radius:999px;
+    padding:1.3vh 4vw; font-family:var(--font-display); font-weight:700; color:var(--muted);
+    font-size:clamp(12px,1.7vw,15px); transition:transform .1s ease;
+  }
+  .reset-btn:active{ transform:scale(.95); }
+  .reset-btn .reset-icon{ font-size:1.2em; }
+  .fertig-btn{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(15px,2.2vw,19px);
+    color:#fff; background:var(--turquoise); border-radius:999px; padding:1.4vh 8vw;
+    box-shadow:0 6px 0 var(--petrol-dark); transition:transform .1s ease, opacity .2s ease;
+  }
+  .fertig-btn:active{ transform:translateY(3px); box-shadow:0 2px 0 var(--petrol-dark); }
+  .fertig-btn[disabled]{ opacity:.35; box-shadow:0 6px 0 rgba(80,90,95,.3); }
+  .fertig-btn.wrong-shake{ animation:shake .4s ease; }
+
+  .feedback-msg{
+    flex-shrink:0; font-family:var(--font-display); font-weight:700; font-size:clamp(13px,1.9vw,16px);
+    color:var(--coral-dark); text-align:center; min-height:2.1em; opacity:0; transition:opacity .2s ease; position:relative; z-index:1;
+  }
+  .feedback-msg.show{ opacity:1; }
+  .feedback-msg.good{ color:var(--petrol-dark); }
+
+  @keyframes shake{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px); } 75%{ transform:translateX(6px); } }
+  @keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+
+  /* ---------- Ende ---------- */
+  #screen-end{ gap:1.5vh; text-align:center; padding:2vh 4vw; overflow-y:auto; width:100%; }
+  .end-emoji-svg{ width:min(30vw,120px); }
+  .end-title{ font-family:var(--font-display); font-weight:800; font-size:clamp(19px,3.4vw,30px); margin:0; color:var(--ink); }
+  .end-sub{ font-family:var(--font-display); font-weight:700; font-size:clamp(13px,1.9vw,17px); color:var(--petrol); margin:0; }
+  .end-actions{ display:flex; gap:3vw; margin-top:.5vh; flex-wrap:wrap; justify-content:center; }
+  .btn-primary{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(13px,1.9vw,16px);
+    color:#fff; background:var(--petrol); border-radius:999px; padding:1.7vh 5.2vw;
+    box-shadow:0 8px 18px -8px rgba(31,107,111,.5); transition:transform .1s ease;
+  }
+  .btn-secondary{
+    font-family:var(--font-display); font-weight:800; font-size:clamp(13px,1.9vw,16px);
+    color:var(--ink); background:var(--panel); border:2px solid var(--panel-edge); border-radius:999px; padding:1.7vh 5.2vw;
+    transition:transform .1s ease;
+  }
+  .btn-primary:active, .btn-secondary:active{ transform:scale(.96); }
+  .confetti-canvas{ position:fixed; inset:0; pointer-events:none; z-index:30; }
+
+  @media (max-width:560px){ .end-actions{ flex-direction:column; width:100%; } }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">🍬 Bonbonmaschine</div>
+    <div class="header-btns">
+      <button class="icon-btn" id="btn-speech" aria-label="Sprachausgabe an/aus" aria-pressed="true">🗣️</button>
+      <button class="icon-btn" id="btn-sound" aria-label="Ton an/aus" aria-pressed="true">🔊</button>
+    </div>
+  </header>
+
+  <!-- START -->
+  <div class="screen" id="screen-start">
+    <svg class="hero-machine" viewBox="0 0 200 230" aria-hidden="true">
+      <ellipse cx="100" cy="150" rx="46" ry="7" fill="rgba(31,107,111,.12)"/>
+      <path d="M62,168 L58,182 Q100,190 142,182 L138,168 Z" fill="var(--coral)" stroke="var(--coral-dark)" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="66" y="118" width="68" height="52" rx="10" fill="var(--coral)" stroke="var(--coral-dark)" stroke-width="3.5"/>
+      <circle cx="100" cy="144" r="13" fill="var(--panel)" stroke="var(--coral-dark)" stroke-width="3"/>
+      <path d="M100,144 L100,135 M100,144 L107,149" stroke="var(--coral-dark)" stroke-width="3" stroke-linecap="round"/>
+      <rect x="85" y="106" width="30" height="14" fill="var(--coral-dark)"/>
+      <circle cx="100" cy="66" r="50" fill="var(--petrol-tint)" stroke="var(--petrol)" stroke-width="5"/>
+      <circle cx="80" cy="52" r="7" fill="var(--coral)"/><circle cx="100" cy="48" r="7" fill="var(--yellow)"/><circle cx="120" cy="55" r="7" fill="var(--turquoise)"/>
+      <circle cx="88" cy="68" r="7" fill="var(--violet)"/><circle cx="108" cy="70" r="7" fill="var(--coral)"/>
+      <circle cx="75" cy="80" r="7" fill="var(--turquoise)"/><circle cx="95" cy="85" r="7" fill="var(--yellow)"/><circle cx="118" cy="80" r="7" fill="var(--violet)"/>
+      <path d="M64,40 Q90,20 128,32" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+      <path d="M62,4 Q100,-6 138,4 L134,20 Q100,12 66,20 Z" fill="var(--coral)" stroke="var(--coral-dark)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M60,198 L98,198 L108,225 L50,225 Z" fill="var(--panel)" stroke="var(--panel-edge)" stroke-width="3"/>
+      <path d="M102,198 L140,198 L150,225 L92,225 Z" fill="var(--panel)" stroke="var(--panel-edge)" stroke-width="3"/>
+    </svg>
+    <h1 class="title-big">BONBONMASCHINE</h1>
+    <p class="subtitle-big">Zahlen zerlegen bis 100</p>
+    <p class="intro-line">Willkommen an der Bonbonmaschine – zerlege die Zahl in ihre Teile! Tippe auf die Bonbons, um sie zu verteilen.</p>
+    <div class="range-choices" id="range-choices">
+      <button class="range-card selected" data-range="10"><span class="big">bis 10</span><span class="sub">Zahlen 2–10</span></button>
+      <button class="range-card" data-range="20"><span class="big">bis 20</span><span class="sub">Zahlen 6–20</span></button>
+      <button class="range-card" data-range="100"><span class="big">bis 100</span><span class="sub">Zahlbeziehungen</span></button>
+    </div>
+    <button class="start-btn" id="btn-start">Maschine starten</button>
+    <p class="brand-footer">Förderfreude Games</p>
+  </div>
+
+  <!-- SPIEL -->
+  <div class="screen" id="screen-game" hidden>
+    <div class="top-row">
+      <div class="energy-track"><div class="energy-fill" id="energy-fill"></div></div>
+      <div class="progress-num"><span id="progress-count">0</span> von 8</div>
+    </div>
+
+    <div class="task-wrap">
+      <div class="task-stage" id="task-stage">
+        <svg class="stage-glow" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <circle cx="6" cy="94" r="30" fill="var(--turquoise)"/>
+          <circle cx="95" cy="4" r="22" fill="var(--coral)"/>
+          <circle cx="88" cy="80" r="16" fill="var(--yellow)"/>
+          <circle cx="14" cy="10" r="13" fill="var(--violet)"/>
+          <circle cx="50" cy="98" r="10" fill="var(--petrol)"/>
+          <circle cx="100" cy="45" r="14" fill="var(--turquoise)"/>
+        </svg>
+
+        <div class="scene-label">
+          <span class="scene-icon" id="scene-icon">🍬</span>
+          <span class="scene-name" id="scene-name"></span>
+        </div>
+
+        <div class="prompt-row">
+          <button class="speak-btn" id="btn-speak-task" aria-label="Vorlesen">🔊</button>
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+        <div class="prompt-sub" id="prompt-sub"></div>
+
+        <div class="task-body" id="task-body"></div>
+
+        <div class="feedback-msg" id="feedback-msg"></div>
+
+        <div class="fertig-row" id="fertig-row">
+          <button class="fertig-btn" id="btn-fertig" disabled>Fertig!</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENDE -->
+  <div class="screen" id="screen-end" hidden>
+    <svg class="end-emoji-svg" viewBox="0 0 200 170" aria-hidden="true">
+      <rect x="60" y="10" width="80" height="16" rx="8" fill="var(--violet)"/>
+      <rect x="50" y="30" width="100" height="60" rx="16" fill="var(--panel)" stroke="var(--turquoise)" stroke-width="4"/>
+      <circle cx="75" cy="60" r="14" fill="none" stroke="var(--turquoise)" stroke-width="4"/>
+      <circle cx="125" cy="60" r="10" fill="none" stroke="var(--coral)" stroke-width="4"/>
+      <path d="M70,90 L60,130 L95,130 L95,90 Z" fill="var(--petrol-tint)" stroke="var(--turquoise)" stroke-width="3"/>
+      <path d="M130,90 L140,130 L105,130 L105,90 Z" fill="var(--petrol-tint)" stroke="var(--turquoise)" stroke-width="3"/>
+      <circle cx="78" cy="115" r="7" fill="var(--turquoise)"/>
+      <circle cx="122" cy="115" r="7" fill="var(--coral)"/>
+    </svg>
+    <h2 class="end-title">Geschafft! Die Bonbonmaschine läuft!</h2>
+    <p class="end-sub">Du hast 8 Aufgaben geschafft.</p>
+    <div class="end-actions">
+      <button class="btn-primary" id="btn-again">Noch eine Runde</button>
+      <button class="btn-secondary" id="btn-other-range">Zahlenraum wechseln</button>
+    </div>
+  </div>
+
+  <canvas class="confetti-canvas" id="confetti-canvas" hidden></canvas>
+
+<script>
+(function(){
+  "use strict";
+
+  const ROUND_TARGET = 8;
+
+  const state = {
+    range: 10, // 10 | 20 | 100 - "bis 10" ist auf dem Startbildschirm vorausgewaehlt
+    soundOn: true,
+    speechOn: true,
+    progress: 0,
+    locked: false,
+    currentTask: null,
+    usedGames: [],
+    lastTargets: {}
+  };
+
+  let pendingTimers = [];
+  function after(ms, fn){
+    const id = setTimeout(()=>{
+      pendingTimers = pendingTimers.filter(t=>t!==id);
+      try{ fn(); }
+      catch(err){
+        // Ein Fehler hier darf das Spiel nie unsichtbar haengen lassen (z.B. state.locked stecken
+        // bleibt) - deshalb zur Sicherheit den Sperr-Zustand zuruecksetzen, falls doch etwas schiefgeht.
+        state.locked = false;
+      }
+    }, ms);
+    pendingTimers.push(id);
+    return id;
+  }
+  function clearPendingTimers(){ pendingTimers.forEach(id=>clearTimeout(id)); pendingTimers=[]; }
+
+  // Sicherheitsnetz: sollte state.locked aus irgendeinem Grund haengen bleiben (z.B. durch einen
+  // unerwarteten Fehler mitten in einer Erfolgs-Animation), wird das Spiel nach kurzer Zeit
+  // automatisch wieder freigegeben, statt dauerhaft unbedienbar zu bleiben.
+  let lockedSince = null;
+  setInterval(() => {
+    if(state.locked){
+      if(lockedSince===null) lockedSince = Date.now();
+      else if(Date.now()-lockedSince > 4000){ state.locked = false; lockedSince = null; }
+    } else {
+      lockedSince = null;
+    }
+  }, 500);
+
+  const els = {
+    screenStart: document.getElementById('screen-start'),
+    screenGame: document.getElementById('screen-game'),
+    screenEnd: document.getElementById('screen-end'),
+    btnSound: document.getElementById('btn-sound'),
+    btnSpeech: document.getElementById('btn-speech'),
+    btnStart: document.getElementById('btn-start'),
+    energyFill: document.getElementById('energy-fill'),
+    progressCount: document.getElementById('progress-count'),
+    sceneIcon: document.getElementById('scene-icon'),
+    sceneName: document.getElementById('scene-name'),
+    promptText: document.getElementById('prompt-text'),
+    promptSub: document.getElementById('prompt-sub'),
+    btnSpeakTask: document.getElementById('btn-speak-task'),
+    taskBody: document.getElementById('task-body'),
+    feedbackMsg: document.getElementById('feedback-msg'),
+    fertigRow: document.getElementById('fertig-row'),
+    btnFertig: document.getElementById('btn-fertig')
+  };
+
+  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+  function plural(n, singular, pluralForm){ return n===1 ? singular : pluralForm; }
+  function pairKey(a,b){ return Math.min(a,b) + '|' + Math.max(a,b); }
+
+  /* =========================================================
+     BEREICH-AUSWAHL (Start)
+     ========================================================= */
+  document.querySelectorAll('.range-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.range-card').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      state.range = parseInt(btn.dataset.range, 10);
+      els.btnStart.disabled = false;
+    });
+  });
+
+  /* =========================================================
+     ENERGIEKUGEL-DARSTELLUNG
+     ========================================================= */
+  function gridColsForBalls(count){
+    if(count<=5) return count || 1;
+    if(count<=10) return 5;
+    return 5;
+  }
+
+  function renderBallGroup(container, count, options){
+    // Baut eine strukturierte Kugel-Anzeige: bis 5 eine Reihe, 6-10 als 5+Rest, 11-20 als zwei 5er-Bloecke (10) + Rest
+    container.innerHTML = '';
+    if(count<=0) return;
+    const dim = options && options.dim;
+    const onBallClick = options && options.onBallClick;
+    function makeBall(){
+      const b = document.createElement('span');
+      b.className = 'energy-ball' + (dim ? ' dim' : '') + (onBallClick ? ' pool' : '');
+      if(onBallClick){
+        b.setAttribute('role','button');
+        b.setAttribute('tabindex','0');
+        b.addEventListener('click', onBallClick);
+      }
+      return b;
+    }
+    function row(n){
+      const r = document.createElement('div');
+      r.style.display='flex'; r.style.gap='2px'; r.style.justifyContent='center';
+      for(let i=0;i<n;i++) r.appendChild(makeBall());
+      return r;
+    }
+    if(count<=10){
+      const g1 = Math.min(count,5);
+      const g2 = Math.max(0,count-5);
+      container.appendChild(row(g1));
+      if(g2>0) container.appendChild(row(g2));
+    } else {
+      // 11-20: 10er-Block (2x5) + Rest
+      const rest = count-10;
+      container.appendChild(row(5));
+      container.appendChild(row(5));
+      if(rest>0) container.appendChild(row(rest));
+    }
+  }
+
+  function buildBallDistributor(ganzes, domeBalls, opts){
+    // Die noch unsortierten Kugeln werden DIREKT in die Glaskuppel der Maschine gerendert (sitzen
+    // visuell "in der Maschine", noch nicht verteilt). Antippen eines Behaelters/einer Tuete holt
+    // eine Kugel aus der Kuppel dorthin; Antippen einer Kugel IN der Tuete schickt sie zurueck.
+    // So ist immer sichtbar: die Kugeln kommen von oben aus der Maschine, nicht schon fertig verteilt.
+    const dstate = { left:0, right:0 };
+    const poolBalls = domeBalls;
+
+    const teileRow = document.createElement('div');
+    teileRow.className = 'teile-row';
+    const box1 = document.createElement('div'); box1.className='teil-box teil-box-tap';
+    box1.innerHTML = `<span class="teil-label">${opts.label1||'Behälter 1'}</span><span class="teil-num">0</span>`;
+    const num1 = box1.querySelector('.teil-num');
+    const balls1 = document.createElement('div'); balls1.className='teil-balls'; box1.appendChild(balls1);
+    const box2 = document.createElement('div'); box2.className='teil-box teil-box-tap';
+    box2.innerHTML = `<span class="teil-label">${opts.label2||'Behälter 2'}</span><span class="teil-num">0</span>`;
+    const num2 = box2.querySelector('.teil-num');
+    const balls2 = document.createElement('div'); balls2.className='teil-balls'; box2.appendChild(balls2);
+    teileRow.appendChild(box1); teileRow.appendChild(box2);
+
+    function remaining(){ return ganzes - dstate.left - dstate.right; }
+    function update(){
+      num1.textContent = dstate.left;
+      num2.textContent = dstate.right;
+      renderBallGroup(poolBalls, remaining());
+      renderBallGroup(balls1, dstate.left, dstate.left>0 ? { onBallClick:(ev)=>{ ev.stopPropagation(); if(opts.locked()) return; dstate.left--; update(); } } : undefined);
+      renderBallGroup(balls2, dstate.right, dstate.right>0 ? { onBallClick:(ev)=>{ ev.stopPropagation(); if(opts.locked()) return; dstate.right--; update(); } } : undefined);
+      after(0, ()=>{ autoFitBalls(poolBalls); autoFitBalls(balls1); autoFitBalls(balls2); });
+      box1.classList.toggle('teil-box-empty-pool', remaining()<=0);
+      box2.classList.toggle('teil-box-empty-pool', remaining()<=0);
+      if(opts.onChange) opts.onChange(dstate);
+    }
+    box1.addEventListener('click', ()=>{ if(opts.locked() || remaining()<=0) return; dstate.left++; update(); });
+    box2.addEventListener('click', ()=>{ if(opts.locked() || remaining()<=0) return; dstate.right++; update(); });
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'reset-btn';
+    resetBtn.innerHTML = '<span class="reset-icon">↺</span><span>Zurücksetzen</span>';
+    resetBtn.setAttribute('aria-label', 'Alle Bonbons zurück in die Maschine');
+    resetBtn.addEventListener('click', () => {
+      dstate.left = 0; dstate.right = 0; update();
+    });
+
+    return { teileRow, resetBtn, dstate, update, reset(){ dstate.left=0; dstate.right=0; update(); } };
+  }
+
+  function fitKeypad(taskBodyEl, keypadEl){
+    // Das Zahlenfeld hat immer 4 Reihen fester Anzahl - bei wenig Hoehe (z.B. Aufgabentext mit
+    // Zeilenumbruch auf schmalen Bildschirmen) konnte die unterste Reihe (0/Loeschen/OK) aus dem
+    // sichtbaren Bereich herausragen, weil Maschine+Anzeige DARUEBER bereits Platz beanspruchen.
+    // Deshalb die tatsaechliche UNTERKANTE des Zahlenfelds gegen die Unterkante von task-body
+    // vergleichen (nicht nur isolierte Hoehen), damit der bereits verbrauchte Platz einberechnet ist.
+    keypadEl.style.removeProperty('--kp-pad');
+    keypadEl.style.removeProperty('--kp-gap');
+    keypadEl.style.removeProperty('--kp-font');
+    const limitBottom = taskBodyEl.getBoundingClientRect().bottom;
+    function fits(padVh, gapVh, fontPx){
+      keypadEl.style.setProperty('--kp-pad', padVh+'vh');
+      keypadEl.style.setProperty('--kp-gap', gapVh+'vh');
+      keypadEl.style.setProperty('--kp-font', fontPx+'px');
+      return keypadEl.getBoundingClientRect().bottom <= limitBottom - 2;
+    }
+    if(fits(1.4,1.2,22)) return;
+    const steps = [[1.1,0.9,20],[0.8,0.7,18],[0.5,0.5,16],[0.3,0.35,14],[0.15,0.25,12]];
+    for(const [p,g,f] of steps){ if(fits(p,g,f)) return; }
+    fits(0.1,0.2,11);
+  }
+
+  function autoFitBalls(container){
+    container.style.removeProperty('--qu');
+    const maxH = container.clientHeight;
+    const maxW = container.clientWidth;
+    if(maxH<=0 || maxW<=0) return;
+    const defaultUnit = parseFloat(getComputedStyle(container).getPropertyValue('--qu')) || 16;
+    function measure(){
+      let w=0,h=0;
+      Array.from(container.children).forEach(row=>{
+        const r = row.getBoundingClientRect();
+        w = Math.max(w, r.width); h += r.height;
+      });
+      return {w,h};
+    }
+    function fits(px){
+      container.style.setProperty('--qu', px+'px');
+      const s = measure();
+      return s.h <= maxH*0.95 && s.w <= maxW*0.95;
+    }
+    if(fits(defaultUnit)) return;
+    const minU = 6;
+    if(!fits(minU)) return;
+    let lo=minU, hi=defaultUnit;
+    for(let i=0;i<16;i++){
+      const mid=(lo+hi)/2;
+      if(fits(mid)) lo=mid; else hi=mid;
+    }
+    fits(lo);
+  }
+
+  /* =========================================================
+     SPRACHAUSGABE
+     ========================================================= */
+  function speak(text){
+    if(!state.speechOn) return;
+    try{
+      if(!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'de-DE';
+      u.rate = 0.95;
+      window.speechSynthesis.speak(u);
+    }catch(err){}
+  }
+
+  /* =========================================================
+     ZAHLENMASCHINE SVG
+     ========================================================= */
+  function renderMachineSvg(container){
+    // Kirmes-Automat nach Vorbild eines Kaugummiautomaten: Glaskuppel oben (dort werden die
+    // Energiekugeln als HTML-Overlay eingeblendet, siehe .machine-dome-balls), roter Maschinenkoerper
+    // mit Ausgabe-Mechanismus darunter, Standfuss. Sofort als "Maschine" erkennbar.
+    container.innerHTML = `<svg viewBox="0 0 200 200" class="machine-svg" aria-hidden="true">
+      <ellipse cx="100" cy="150" rx="46" ry="7" fill="rgba(31,107,111,.12)"/>
+      <path d="M62,168 L58,182 Q100,190 142,182 L138,168 Z" fill="var(--coral)" stroke="var(--coral-dark)" stroke-width="3" stroke-linejoin="round"/>
+      <rect x="66" y="118" width="68" height="52" rx="10" fill="var(--coral)" stroke="var(--coral-dark)" stroke-width="3.5"/>
+      <circle cx="100" cy="144" r="13" fill="var(--panel)" stroke="var(--coral-dark)" stroke-width="3"/>
+      <path d="M100,144 L100,135 M100,144 L107,149" stroke="var(--coral-dark)" stroke-width="3" stroke-linecap="round"/>
+      <rect x="85" y="106" width="30" height="14" fill="var(--coral-dark)"/>
+      <circle cx="100" cy="66" r="50" fill="var(--petrol-tint)" stroke="var(--petrol)" stroke-width="5"/>
+      <path d="M64,40 Q90,20 128,32" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity="0.5"/>
+      <path d="M62,4 Q100,-6 138,4 L134,20 Q100,12 66,20 Z" fill="var(--coral)" stroke="var(--coral-dark)" stroke-width="3" stroke-linejoin="round"/>
+      <circle class="machine-pulse" cx="100" cy="66" r="50" fill="var(--turquoise)" opacity="0"/>
+    </svg>`;
+  }
+
+  /* =========================================================
+     AUFGABEN-GENERATOREN: BIS 10 / BIS 20
+     ========================================================= */
+  function pickGanzes(minV, maxV, avoidKey){
+    let n, guard=0;
+    const avoid = state.lastTargets[avoidKey];
+    do{ guard++; n = randInt(minV, maxV); } while(n===avoid && guard<30);
+    state.lastTargets[avoidKey] = n;
+    return n;
+  }
+
+  function splitRandom(ganzes, allowZero){
+    const lo = allowZero ? 0 : 0; // 0 grundsaetzlich erlaubt, aber selten gewaehlt (siehe unten)
+    let teil1;
+    let guard=0;
+    do{
+      teil1 = randInt(0, ganzes);
+      guard++;
+    } while(!allowZero && (teil1===0 || teil1===ganzes) && guard<20 && ganzes>1);
+    return [teil1, ganzes-teil1];
+  }
+
+  function genFehlenderTeil(maxRange, minGanzes){
+    const ganzes = pickGanzes(minGanzes, maxRange, 'fehlenderTeil');
+    const rareZero = Math.random()<0.08;
+    const [teil1, teil2] = splitRandom(ganzes, rareZero);
+    return { game:'fehlenderTeil', ganzes, teil1, teil2 };
+  }
+
+  function genFreiZerlegen(maxRange, minGanzes){
+    const ganzes = pickGanzes(minGanzes, maxRange, 'freiZerlegen');
+    return { game:'freiZerlegen', ganzes };
+  }
+
+  function genMehrereZerlegungen(maxRange, minGanzes){
+    const ganzes = pickGanzes(Math.max(minGanzes,4), maxRange, 'mehrereZerlegungen');
+    // Anzahl moeglicher, ausreichend unterschiedlicher Zerlegungen ohne 0 pruefen
+    const maxDistinct = Math.floor(ganzes/2) + 1; // 0..ganzes/2 als teil1 (kleinerer Teil)
+    const zielAnzahl = Math.min(3, Math.max(2, maxDistinct-1));
+    return { game:'mehrereZerlegungen', ganzes, zielAnzahl, gefunden: [] };
+  }
+
+  function genWelcheZerlegung(maxRange, minGanzes){
+    const ganzes = pickGanzes(minGanzes, maxRange, 'welcheZerlegung');
+    const [t1,t2] = splitRandom(ganzes, false);
+    const correct = [t1,t2];
+    const options = [correct];
+    const usedKeys = new Set([pairKey(t1,t2)]);
+    let guard=0;
+    while(options.length<3 && guard<40){
+      guard++;
+      const delta = pick([-2,-1,1,2]);
+      let a = t1+delta;
+      if(a<0 || a>ganzes) a = t1-delta;
+      if(a<0 || a>ganzes) continue;
+      const b = ganzes-a; // WICHTIG: b wird bewusst NICHT so berechnet, dass a+b=ganzes fuer die Distraktoren gilt
+      // Fuer einen echten Distraktor darf a+b NICHT ganzes ergeben - stattdessen leicht falsche Paarung:
+      const wrongB = ganzes - a + pick([-1,1]);
+      if(wrongB<0 || wrongB>ganzes+2) continue;
+      if(a+wrongB===ganzes) continue;
+      const key = pairKey(a,wrongB);
+      if(usedKeys.has(key)) continue;
+      usedKeys.add(key);
+      options.push([a,wrongB]);
+    }
+    while(options.length<3){
+      const a = randInt(0,ganzes); const b = randInt(0,ganzes);
+      if(a+b===ganzes) continue;
+      const key = pairKey(a,b);
+      if(usedKeys.has(key)) continue;
+      usedKeys.add(key);
+      options.push([a,b]);
+    }
+    return { game:'welcheZerlegung', ganzes, correct, options: shuffle(options) };
+  }
+
+  function genTeilFest(maxRange, minGanzes){
+    const ganzes = pickGanzes(Math.max(minGanzes,3), maxRange, 'teilFest');
+    const teil1 = randInt(1, ganzes-1);
+    const teil2 = ganzes-teil1;
+    return { game:'teilFest', ganzes, teil1, teil2 };
+  }
+
+  /* =========================================================
+     AUFGABEN-GENERATOREN: BIS 100
+     ========================================================= */
+  const ROUND_TENS = [10,20,30,40,50,60,70,80,90,100];
+
+  function genDistractorPair(ganzes, correctA, correctB, deltaPool, usedKeys, minA, minB){
+    // Veraendert GENAU einen der beiden richtigen Werte um einen Delta-Wert und prueft explizit,
+    // dass die neue Summe NICHT ganzes ergibt - verhindert, dass ein rechnerisch immer korrektes
+    // Paar (z.B. via wrongB = ganzes - cand) versehentlich als "falsche" Option verwendet wird.
+    let guard=0;
+    while(guard<40){
+      guard++;
+      const changeFirst = Math.random()<0.5;
+      const delta = pick(deltaPool);
+      const a = changeFirst ? correctA+delta : correctA;
+      const b = changeFirst ? correctB : correctB+delta;
+      if(a<minA || b<minB) continue;
+      if(a+b===ganzes) continue;
+      const key = pairKey(a,b);
+      if(usedKeys.has(key)) continue;
+      usedKeys.add(key);
+      return [a,b];
+    }
+    return null;
+  }
+
+  function genWelcheZerlegung100(){
+    const style = pick(['zehner','zehnerEiner']);
+    if(style==='zehner'){
+      const ganzes = pick(ROUND_TENS.filter(t=>t>=20));
+      const a = pick(ROUND_TENS.filter(t=>t>0 && t<ganzes));
+      const b = ganzes-a;
+      const correct = [a,b];
+      const options=[correct];
+      const usedKeys = new Set([pairKey(a,b)]);
+      while(options.length<3){
+        const d = genDistractorPair(ganzes, a, b, [-30,-20,-10,10,20,30], usedKeys, 0, 0);
+        if(d) options.push(d); else break;
+      }
+      while(options.length<3){
+        const x = pick(ROUND_TENS); const y = pick(ROUND_TENS);
+        if(x+y===ganzes) continue;
+        const key = pairKey(x,y);
+        if(usedKeys.has(key)) continue;
+        usedKeys.add(key);
+        options.push([x,y]);
+      }
+      return { game:'welcheZerlegung', ganzes, correct, options: shuffle(options), sub:'zehner' };
+    } else {
+      const zehner = randInt(2,9)*10;
+      const einer = randInt(1,9);
+      const ganzes = zehner+einer;
+      const correct = [zehner, einer];
+      const options=[correct];
+      const usedKeys = new Set([pairKey(zehner,einer)]);
+      while(options.length<3){
+        const d = genDistractorPair(ganzes, zehner, einer, [-20,-10,10,20], usedKeys, 10, 0)
+                || genDistractorPair(ganzes, zehner, einer, [-2,-1,1,2,3], usedKeys, 10, 0);
+        if(d) options.push(d); else break;
+      }
+      while(options.length<3){
+        const cand = zehner + pick([-30,-20,-10,10,20,30]);
+        if(cand<10){ continue; }
+        const wrongB = Math.max(0, einer + pick([-3,-2,-1,1,2,3]));
+        if(cand+wrongB===ganzes) continue;
+        const key = pairKey(cand,wrongB);
+        if(usedKeys.has(key)) continue;
+        usedKeys.add(key);
+        options.push([cand,wrongB]);
+      }
+      return { game:'welcheZerlegung', ganzes, correct, options: shuffle(options), sub:'zehnerEiner' };
+    }
+  }
+
+  function genFehlenderTeil100(){
+    const style = pick(['zehnerEiner','ergaenzen']);
+    if(style==='zehnerEiner'){
+      const zehner = randInt(2,9)*10;
+      const einer = randInt(1,9);
+      const ganzes = zehner+einer;
+      return { game:'fehlenderTeil', ganzes, teil1: zehner, teil2: einer, sub:'zehnerEiner' };
+    } else {
+      const ganzes = pick(ROUND_TENS.filter(t=>t>=20));
+      const teil1 = pick(ROUND_TENS.filter(t=>t>0 && t<ganzes));
+      const teil2 = ganzes-teil1;
+      return { game:'fehlenderTeil', ganzes, teil1, teil2, sub:'ergaenzen' };
+    }
+  }
+
+  function genMehrereZerlegungen100(){
+    const ganzes = pick(ROUND_TENS.filter(t=>t>=40));
+    return { game:'mehrereZerlegungen', ganzes, zielAnzahl:2, gefunden: [], sub:'zehner100' };
+  }
+
+  /* =========================================================
+     GENERATOR-AUSWAHL
+     ========================================================= */
+  const GEN_10 = [
+    { weight:1, game:'fehlenderTeil', gen:()=>genFehlenderTeil(10,2), icon:'🔍', name:'Der fehlende Teil' },
+    { weight:1, game:'freiZerlegen', gen:()=>genFreiZerlegen(10,2), icon:'🍬', name:'Frei zerlegen' },
+    { weight:1, game:'mehrereZerlegungen', gen:()=>genMehrereZerlegungen(10,4), icon:'🎯', name:'Finde mehrere Zerlegungen' },
+    { weight:1, game:'welcheZerlegung', gen:()=>genWelcheZerlegung(10,2), icon:'🧩', name:'Welche Zerlegung passt?' },
+    { weight:1, game:'teilFest', gen:()=>genTeilFest(10,3), icon:'🍭', name:'Baue den anderen Teil' }
+  ];
+  const GEN_20 = [
+    { weight:1, game:'fehlenderTeil', gen:()=>genFehlenderTeil(20,6), icon:'🔍', name:'Der fehlende Teil' },
+    { weight:1, game:'freiZerlegen', gen:()=>genFreiZerlegen(20,6), icon:'🍬', name:'Frei zerlegen' },
+    { weight:1, game:'mehrereZerlegungen', gen:()=>genMehrereZerlegungen(20,8), icon:'🎯', name:'Finde mehrere Zerlegungen' },
+    { weight:1, game:'welcheZerlegung', gen:()=>genWelcheZerlegung(20,6), icon:'🧩', name:'Welche Zerlegung passt?' },
+    { weight:1, game:'teilFest', gen:()=>genTeilFest(20,6), icon:'🍭', name:'Baue den anderen Teil' }
+  ];
+  const GEN_100 = [
+    { weight:1, game:'welcheZerlegung', gen:genWelcheZerlegung100, icon:'🧩', name:'Welche Zerlegung passt?' },
+    { weight:1, game:'fehlenderTeil', gen:genFehlenderTeil100, icon:'🔍', name:'Der fehlende Teil' },
+    { weight:1, game:'mehrereZerlegungen', gen:genMehrereZerlegungen100, icon:'🎯', name:'Finde zwei Zerlegungen' }
+  ];
+
+  function generatorsForRange(){
+    if(state.range===10) return GEN_10;
+    if(state.range===20) return GEN_20;
+    return GEN_100;
+  }
+
+  function pickGameGenerator(){
+    const generators = generatorsForRange();
+    const lastGame = state.usedGames.length ? state.usedGames[state.usedGames.length-1] : null;
+    let pool = generators.filter(g => g.game !== lastGame);
+    if(pool.length===0) pool = generators;
+    const chosen = pick(pool);
+    const task = chosen.gen();
+    task.icon = chosen.icon;
+    task.sceneName = chosen.name;
+    state.usedGames.push(task.game);
+    if(state.usedGames.length>3) state.usedGames.shift();
+    return task;
+  }
+
+  /* =========================================================
+     RENDER: MASCHINE + TEIL-BEHAELTER
+     ========================================================= */
+  function buildMachineFrame(ganzes){
+    const wrap = document.createElement('div');
+    wrap.className = 'machine-wrap';
+    const ganzesRow = document.createElement('div');
+    ganzesRow.className = 'ganzes-row';
+    ganzesRow.innerHTML = `<span class="ganzes-label">Ganzes</span>`;
+    const ganzesNum = document.createElement('span');
+    ganzesNum.className = 'ganzes-num';
+    ganzesNum.textContent = ganzes;
+    ganzesRow.appendChild(ganzesNum);
+    const svgWrap = document.createElement('div');
+    svgWrap.className = 'machine-svg-wrap';
+    svgWrap.id = 'machine-svg-wrap-' + Math.random().toString(36).slice(2,7);
+    renderMachineSvg(svgWrap);
+    const domeBalls = document.createElement('div');
+    domeBalls.className = 'machine-dome-balls';
+    svgWrap.appendChild(domeBalls);
+    wrap.appendChild(ganzesRow);
+    wrap.appendChild(svgWrap);
+    return { wrap, svgWrap, domeBalls };
+  }
+
+  function activateMachine(svgWrap){
+    svgWrap.classList.add('machine-active');
+    const pulse = svgWrap.querySelector('.machine-pulse');
+    if(pulse){ pulse.setAttribute('r','34'); after(20,()=>pulse.setAttribute('r','70')); }
+    after(700, ()=> svgWrap.classList.remove('machine-active'));
+  }
+
+  /* =========================================================
+     AUFGABE RENDERN
+     ========================================================= */
+  let taskSelection = null;
+
+  function setPrompt(text, spokenText){
+    els.promptText.textContent = text;
+    const toSpeak = spokenText || text;
+    els.btnSpeakTask.onclick = () => speak(toSpeak);
+  }
+
+  function ballStyleFor(){ return state.range<=20; }
+
+  function newTask(forcedTask){
+    state.locked = false;
+    els.feedbackMsg.classList.remove('show','good');
+    els.feedbackMsg.textContent = '';
+    els.btnFertig.disabled = true;
+    els.fertigRow.style.display = '';
+    els.promptSub.textContent = '';
+    const oldResetBtn = els.fertigRow.querySelector('.reset-btn');
+    if(oldResetBtn) oldResetBtn.remove();
+    const task = forcedTask || pickGameGenerator();
+    state.currentTask = task;
+    els.sceneIcon.textContent = task.icon || '🍬';
+    els.sceneName.textContent = task.sceneName || '';
+    els.taskBody.innerHTML = '';
+    taskSelection = null;
+
+    if(task.game === 'fehlenderTeil'){
+      setPrompt(`${task.ganzes} = ${task.teil1} + ?`, `${task.ganzes} ist ${task.teil1} und wie viel?`);
+      taskSelection = { value:null };
+      const {wrap, svgWrap} = buildMachineFrame(task.ganzes);
+      const teileRow = document.createElement('div');
+      teileRow.className = 'teile-row';
+      const box1 = document.createElement('div');
+      box1.className = 'teil-box';
+      box1.innerHTML = `<span class="teil-label">Tüte 1</span><span class="teil-num">${task.teil1}</span>`;
+      const ballsC1 = document.createElement('div'); ballsC1.className='teil-balls';
+      box1.appendChild(ballsC1);
+      const box2 = document.createElement('div');
+      box2.className = 'teil-box active-input';
+      box2.innerHTML = `<span class="teil-label">Tüte 2</span><span class="teil-num unknown" id="teil2-display">?</span>`;
+      const ballsC2 = document.createElement('div'); ballsC2.className='teil-balls';
+      box2.appendChild(ballsC2);
+      teileRow.appendChild(box1); teileRow.appendChild(box2);
+      wrap.appendChild(teileRow);
+
+      if(ballStyleFor()){
+        const choiceRow = document.createElement('div');
+        choiceRow.className = 'choice-row';
+        const correctVal = task.teil2;
+        const opts = new Set([correctVal]);
+        let guard=0;
+        while(opts.size<3 && guard<30){
+          guard++;
+          const c = correctVal + pick([-2,-1,1,2]);
+          if(c>=0 && c<=task.ganzes) opts.add(c);
+        }
+        shuffle(Array.from(opts)).forEach(val => {
+          const card = document.createElement('div');
+          card.className = 'choice-card';
+          card.innerHTML = `<span class="choice-split">${val}</span>`;
+          card.addEventListener('click', () => {
+            if(state.locked) return;
+            if(val===correctVal){
+              state.locked = true;
+              card.classList.add('correct-pulse');
+              const t2d = document.getElementById('teil2-display'); if(t2d) t2d.textContent = val;
+              renderBallGroup(ballsC1, task.teil1);
+              renderBallGroup(ballsC2, val);
+              after(0,()=>{ autoFitBalls(ballsC1); autoFitBalls(ballsC2); });
+              activateMachine(svgWrap);
+              sndCorrect();
+              showFeedback(pick(['Super gemacht!','Genau richtig!','Toll!']), true);
+              after(750, onTaskSuccess);
+            } else {
+              card.classList.add('wrong');
+              sndWrong();
+              showFeedback(pick(['Fast! Schau noch einmal.','Das ergibt noch nicht die ganze Zahl.']));
+              after(420, ()=>card.classList.remove('wrong'));
+            }
+          });
+          choiceRow.appendChild(card);
+        });
+        wrap.appendChild(choiceRow);
+        els.fertigRow.style.display = 'none';
+        els.taskBody.appendChild(wrap);
+        after(0, ()=>{ renderBallGroup(ballsC1, task.teil1); autoFitBalls(ballsC1); });
+      } else {
+        // bis 100: Tastenfeld
+        const display = document.createElement('div');
+        display.className = 'input-display';
+        display.textContent = '?';
+        wrap.appendChild(display);
+        const keypad = buildKeypad((val)=>{
+          display.textContent = val===''? '?': val;
+        }, () => {
+          const val = parseInt(display.textContent,10);
+          if(isNaN(val)) { triggerWrong(); return; }
+          if(val===task.teil2){
+            state.locked = true;
+            const t2d2 = document.getElementById('teil2-display'); if(t2d2) t2d2.textContent = val;
+            activateMachine(svgWrap);
+            sndCorrect();
+            showFeedback(pick(['Super gemacht!','Genau richtig!','Toll!']), true);
+            after(750, onTaskSuccess);
+          } else {
+            triggerWrong();
+          }
+        });
+        wrap.appendChild(keypad);
+        els.fertigRow.style.display = 'none';
+        els.taskBody.appendChild(wrap);
+        fitKeypad(els.taskBody, keypad.querySelector('.keypad'));
+      }
+    }
+
+    else if(task.game === 'freiZerlegen'){
+      const gerecht = task.ganzes % 2 === 0;
+      setPrompt(
+        gerecht ? 'Verteile die Bonbons gerecht!' : 'Verteile die Bonbons auf die Tüten!',
+        gerecht ? `Verteile alle ${task.ganzes} Bonbons gerecht auf die zwei Tüten.` : `Verteile alle ${task.ganzes} Bonbons auf die zwei Tüten.`
+      );
+      els.promptSub.textContent = 'Tüten antippen!';
+      const {wrap, svgWrap, domeBalls} = buildMachineFrame(task.ganzes);
+      const dist = buildBallDistributor(task.ganzes, domeBalls, {
+        label1:'Tüte 1', label2:'Tüte 2',
+        locked: () => state.locked,
+        onChange: (d) => { els.btnFertig.disabled = !(d.left>0 || d.right>0); }
+      });
+      taskSelection = dist.dstate;
+      wrap.appendChild(dist.teileRow);
+      els.taskBody.appendChild(wrap);
+      els.fertigRow.insertBefore(dist.resetBtn, els.btnFertig);
+      dist.update();
+      els.btnFertig.disabled = true;
+
+      els.btnFertig.onclick = () => {
+        if(state.locked) return;
+        const correct = taskSelection.left + taskSelection.right === task.ganzes && (taskSelection.left>0 || taskSelection.right>0);
+        if(correct){
+          state.locked = true;
+          activateMachine(svgWrap);
+          sndCorrect();
+          showFeedback(pick(['Super gemacht!','Genau richtig!','Toll!']), true);
+          after(750, onTaskSuccess);
+        } else {
+          triggerWrong();
+        }
+      };
+    }
+
+    else if(task.game === 'teilFest'){
+      setPrompt(`${task.teil1} + ? = ${task.ganzes}`, `Wie viele fehlen bis ${task.ganzes}?`);
+      els.promptSub.textContent = 'Bonbons antippen!';
+      taskSelection = { count:0, need: task.teil2 };
+      const {wrap, svgWrap, domeBalls} = buildMachineFrame(task.ganzes);
+      const teileRow = document.createElement('div');
+      teileRow.className = 'teile-row';
+      const box1 = document.createElement('div'); box1.className='teil-box';
+      box1.innerHTML = `<span class="teil-label">Tüte 1</span><span class="teil-num">${task.teil1}</span>`;
+      const balls1 = document.createElement('div'); balls1.className='teil-balls'; box1.appendChild(balls1);
+      const box2 = document.createElement('div'); box2.className='teil-box active-input';
+      box2.innerHTML = `<span class="teil-label">Tüte 2</span><span class="teil-num" id="t2buildnum">0</span>`;
+      const balls2 = document.createElement('div'); balls2.className='teil-balls'; box2.appendChild(balls2);
+      teileRow.appendChild(box1); teileRow.appendChild(box2);
+      wrap.appendChild(teileRow);
+      els.taskBody.appendChild(wrap);
+
+      const poolMax = task.ganzes - task.teil1 + 3;
+      function updatePool(){
+        renderBallGroup(domeBalls, poolMax - taskSelection.count, { onBallClick:(ev)=>{
+          ev.stopPropagation();
+          if(state.locked) return;
+          if(taskSelection.count >= poolMax) return;
+          taskSelection.count++;
+          document.getElementById('t2buildnum').textContent = taskSelection.count;
+          renderBallGroup(balls2, taskSelection.count);
+          updatePool();
+          after(0,()=>{ autoFitBalls(balls2); autoFitBalls(domeBalls); });
+          els.btnFertig.disabled = false;
+        }});
+        after(0,()=>autoFitBalls(domeBalls));
+      }
+      updatePool();
+      after(0, ()=>{ renderBallGroup(balls1, task.teil1); autoFitBalls(balls1); });
+
+      els.btnFertig.onclick = () => {
+        if(state.locked) return;
+        if(taskSelection.count === task.teil2){
+          state.locked = true;
+          activateMachine(svgWrap);
+          sndCorrect();
+          showFeedback(pick(['Super gemacht!','Genau richtig!','Toll!']), true);
+          after(750, onTaskSuccess);
+        } else {
+          triggerWrong();
+        }
+      };
+    }
+
+    else if(task.game === 'welcheZerlegung'){
+      setPrompt(`Was ergibt ${task.ganzes}?`, `Welche Zerlegung ergibt ${task.ganzes}?`);
+      const {wrap} = buildMachineFrame(task.ganzes);
+      const choiceRow = document.createElement('div');
+      choiceRow.className = 'choice-row';
+      task.options.forEach(([a,b]) => {
+        const card = document.createElement('div');
+        card.className = 'choice-card';
+        card.innerHTML = `<span class="choice-split">${a} | ${b}</span>`;
+        card.addEventListener('click', () => {
+          if(state.locked) return;
+          const isCorrect = a===task.correct[0] && b===task.correct[1];
+          if(isCorrect){
+            state.locked = true;
+            card.classList.add('correct-pulse');
+            sndCorrect();
+            showFeedback(pick(['Super gemacht!','Genau richtig!','Toll!']), true);
+            after(650, onTaskSuccess);
+          } else {
+            card.classList.add('wrong');
+            sndWrong();
+            showFeedback(pick(['Fast! Schau noch einmal.','Das ergibt noch nicht die ganze Zahl.']));
+            after(420, ()=>card.classList.remove('wrong'));
+          }
+        });
+        choiceRow.appendChild(card);
+      });
+      wrap.appendChild(choiceRow);
+      els.taskBody.appendChild(wrap);
+      els.fertigRow.style.display = 'none';
+    }
+
+    else if(task.game === 'mehrereZerlegungen'){
+      setPrompt(`Finde ${task.zielAnzahl} Wege zu ${task.ganzes}!`, `Finde ${task.zielAnzahl} verschiedene Zerlegungen von ${task.ganzes}.`);
+      taskSelection = task;
+      const {wrap, svgWrap, domeBalls} = buildMachineFrame(task.ganzes);
+      els.taskBody.appendChild(wrap); // frueh anhaengen: nachfolgender Code nutzt getElementById, das nur im LIVEN Dokument funktioniert
+      const foundRow = document.createElement('div');
+      foundRow.className = 'found-row';
+      function redrawFound(){
+        foundRow.innerHTML = '';
+        for(let i=0;i<task.zielAnzahl;i++){
+          const chip = document.createElement('span');
+          if(task.gefunden[i]){
+            chip.className = 'found-chip';
+            chip.textContent = `${task.gefunden[i][0]} | ${task.gefunden[i][1]}`;
+          } else {
+            chip.className = 'found-chip pending';
+            chip.textContent = '? | ?';
+          }
+          foundRow.appendChild(chip);
+        }
+      }
+      redrawFound();
+      wrap.appendChild(foundRow);
+
+      if(task.sub==='zehner100'){
+        // Auswahl aus Zehner-Paaren per Karten
+        const choiceRow = document.createElement('div');
+        choiceRow.className = 'choice-row';
+        const allPairs = [];
+        const seenPairKeys = new Set();
+        for(let a=10;a<task.ganzes;a+=10){
+          const b = task.ganzes-a;
+          const key = pairKey(a,b);
+          if(seenPairKeys.has(key)) continue; // 30|40 und 40|30 sind dieselbe Zerlegung - nicht doppelt anbieten
+          seenPairKeys.add(key);
+          allPairs.push([a,b]);
+        }
+        shuffle(allPairs).slice(0,4).forEach(([a,b]) => {
+          const card = document.createElement('div');
+          card.className = 'choice-card';
+          card.innerHTML = `<span class="choice-split">${a} | ${b}</span>`;
+          card.addEventListener('click', () => {
+            if(state.locked) return;
+            const key = pairKey(a,b);
+            if(task.gefunden.some(p=>pairKey(p[0],p[1])===key)){
+              showFeedback('Die hast du schon entdeckt! Finde noch eine andere.');
+              return;
+            }
+            task.gefunden.push([a,b]);
+            card.classList.add('correct-pulse');
+            card.style.pointerEvents='none';
+            sndCorrect();
+            redrawFound();
+            if(task.gefunden.length>=task.zielAnzahl){
+              state.locked = true;
+              showFeedback(pick(['Super gemacht!','Genau richtig!']), true);
+              after(700, onTaskSuccess);
+            } else {
+              showFeedback('Super! Finde noch eine.', true);
+            }
+          });
+          choiceRow.appendChild(card);
+        });
+        wrap.appendChild(choiceRow);
+      } else {
+        // bis 10/20: freie Kugelverteilung, Ergebnis pruefen und sammeln
+        els.promptSub.textContent = 'Tüten antippen!';
+        const dist = buildBallDistributor(task.ganzes, domeBalls, {
+          label1:'Tüte 1', label2:'Tüte 2',
+          locked: () => state.locked,
+          onChange: (d) => { els.btnFertig.disabled = !(d.left>0 && d.right>0); }
+        });
+        taskSelection = dist.dstate;
+        wrap.appendChild(dist.teileRow);
+        els.fertigRow.insertBefore(dist.resetBtn, els.btnFertig);
+        dist.update();
+        els.btnFertig.disabled = true;
+
+        els.btnFertig.onclick = () => {
+          if(state.locked) return;
+          const a=taskSelection.left, b=taskSelection.right;
+          if(a<=0 || b<=0){ triggerWrong(); return; }
+          const key = pairKey(a,b);
+          if(task.gefunden.some(p=>pairKey(p[0],p[1])===key)){
+            showFeedback('Die hast du schon entdeckt! Finde noch eine andere.');
+            els.btnFertig.classList.add('wrong-shake');
+            after(400,()=>els.btnFertig.classList.remove('wrong-shake'));
+            return;
+          }
+          task.gefunden.push([a,b]);
+          sndCorrect();
+          redrawFound();
+          if(task.gefunden.length>=task.zielAnzahl){
+            state.locked = true;
+            showFeedback(pick(['Super gemacht!','Genau richtig!']), true);
+            after(700, onTaskSuccess);
+          } else {
+            state.locked = true;
+            showFeedback('Super! Nochmal verteilen!', true);
+            after(600, () => { state.locked = false; dist.reset(); });
+          }
+        };
+      }
+    }
+  }
+
+  function buildKeypad(onInput, onConfirm){
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:1vh;';
+    const keypad = document.createElement('div');
+    keypad.className = 'keypad';
+    let buffer = '';
+    for(let n=1;n<=9;n++){
+      const b = document.createElement('button');
+      b.className='keypad-btn'; b.textContent=n;
+      b.addEventListener('click', ()=>{ if(buffer.length<3){ buffer+=n; onInput(buffer); } });
+      keypad.appendChild(b);
+    }
+    const clearBtn = document.createElement('button');
+    clearBtn.className='keypad-btn'; clearBtn.textContent='⌫';
+    clearBtn.addEventListener('click', ()=>{ buffer=buffer.slice(0,-1); onInput(buffer); });
+    keypad.appendChild(clearBtn);
+    const zeroBtn = document.createElement('button');
+    zeroBtn.className='keypad-btn'; zeroBtn.textContent='0';
+    zeroBtn.addEventListener('click', ()=>{ if(buffer.length<3){ buffer+='0'; onInput(buffer); } });
+    keypad.appendChild(zeroBtn);
+    const okBtn = document.createElement('button');
+    okBtn.className='keypad-btn'; okBtn.textContent='OK'; okBtn.style.background='var(--turquoise)'; okBtn.style.color='#fff';
+    okBtn.addEventListener('click', ()=>{ onConfirm(); });
+    keypad.appendChild(okBtn);
+    wrap.appendChild(keypad);
+    return wrap;
+  }
+
+  function triggerWrong(){
+    sndWrong();
+    els.btnFertig.classList.add('wrong-shake');
+    after(400, ()=>els.btnFertig.classList.remove('wrong-shake'));
+    showFeedback(pick(['Fast! Schau noch einmal.','Das ergibt noch nicht die ganze Zahl.','Probier es noch einmal.']));
+  }
+
+  function showFeedback(msg, good){
+    els.feedbackMsg.textContent = msg;
+    els.feedbackMsg.classList.toggle('good', !!good);
+    els.feedbackMsg.classList.add('show');
+  }
+
+  function onTaskSuccess(){
+    registerSuccess();
+  }
+
+  /* =========================================================
+     FORTSCHRITT
+     ========================================================= */
+  function registerSuccess(){
+    state.progress = Math.min(ROUND_TARGET, state.progress+1);
+    els.progressCount.textContent = state.progress;
+    els.energyFill.style.width = Math.round(state.progress/ROUND_TARGET*100) + '%';
+    if(state.progress >= ROUND_TARGET){
+      after(500, endGame);
+    } else {
+      after(350, () => newTask());
+    }
+  }
+
+  /* =========================================================
+     START / ENDE
+     ========================================================= */
+  function startGame(){
+    clearPendingTimers();
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+    state.progress = 0;
+    state.locked = false;
+    state.usedGames = [];
+    state.lastTargets = {};
+
+    els.screenStart.hidden = true;
+    els.screenEnd.hidden = true;
+    els.screenGame.hidden = false;
+
+    els.progressCount.textContent = '0';
+    els.energyFill.style.width = '0%';
+    newTask();
+  }
+
+  function endGame(){
+    clearPendingTimers();
+    els.screenGame.hidden = true;
+    els.screenEnd.hidden = false;
+    sndWin();
+    runConfetti();
+  }
+
+  els.btnStart.addEventListener('click', () => {
+    if(els.btnStart.disabled) return;
+    ensureAudio();
+    startGame();
+  });
+  document.getElementById('btn-again').addEventListener('click', () => {
+    els.screenEnd.hidden = true;
+    startGame();
+  });
+  document.getElementById('btn-other-range').addEventListener('click', () => {
+    clearPendingTimers();
+    try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+    els.screenEnd.hidden = true;
+    els.screenGame.hidden = true;
+    els.screenStart.hidden = false;
+  });
+  els.btnSound.addEventListener('click', () => {
+    state.soundOn = !state.soundOn;
+    els.btnSound.textContent = state.soundOn ? '🔊' : '🔇';
+    els.btnSound.setAttribute('aria-pressed', String(state.soundOn));
+  });
+  els.btnSpeech.addEventListener('click', () => {
+    state.speechOn = !state.speechOn;
+    els.btnSpeech.setAttribute('aria-pressed', String(state.speechOn));
+    if(!state.speechOn){ try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){} }
+  });
+
+  /* =========================================================
+     SOUND
+     ========================================================= */
+  let actx = null;
+  function ensureAudio(){ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); } }
+  function tone(freq, dur, type, gainPeak, delay){
+    if(!state.soundOn) return;
+    try{
+      if(!actx) return;
+      const t0 = actx.currentTime + (delay||0);
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = type||'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(gainPeak||0.14, t0+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+      osc.connect(gain).connect(actx.destination);
+      osc.start(t0); osc.stop(t0+dur+0.03);
+    }catch(err){}
+  }
+  function sndCorrect(){ tone(600,0.1,'triangle',0.15); tone(880,0.16,'triangle',0.13,0.08); }
+  function sndWrong(){ tone(220,0.15,'sine',0.08); }
+  function sndWin(){ [523,659,784,1046,1318].forEach((f,i)=>tone(f,0.3,'triangle',0.13,i*0.11)); }
+
+  /* =========================================================
+     KONFETTI
+     ========================================================= */
+  function runConfetti(){
+    const canvas = document.getElementById('confetti-canvas');
+    canvas.hidden = false;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const colors = ['#1f6b6f','#3fb6b0','#f2c53d','#e8735a','#8a6bb0'];
+    const pieces = Array.from({length:110}, () => ({
+      x: Math.random()*canvas.width, y:-20-Math.random()*canvas.height*0.5,
+      w:4+Math.random()*6, h:6+Math.random()*10,
+      vy:2+Math.random()*3, vx:-1+Math.random()*2,
+      rot:Math.random()*360, vr:-6+Math.random()*12,
+      color: colors[Math.floor(Math.random()*colors.length)]
+    }));
+    let frames = 0;
+    function loop(){
+      frames++;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      pieces.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+        ctx.fillStyle=p.color; ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+        ctx.restore();
+      });
+      if(frames<200) requestAnimationFrame(loop);
+      else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.hidden = true; }
+    }
+    loop();
+  }
+
+  window.__zlDebug = { state, forceTask: (t) => newTask(t), getSelection: () => taskSelection };
+
+})();
+</script>
+
+</body>
+</html>
