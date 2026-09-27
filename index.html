@@ -1056,21 +1056,28 @@
       els.taskBody.appendChild(wrap);
 
       const poolMax = task.ganzes - task.teil1 + 3;
-      function updatePool(){
+      function updateAll(){
         renderBallGroup(domeBalls, poolMax - taskSelection.count, { onBallClick:(ev)=>{
           ev.stopPropagation();
           if(state.locked) return;
           if(taskSelection.count >= poolMax) return;
           taskSelection.count++;
           document.getElementById('t2buildnum').textContent = taskSelection.count;
-          renderBallGroup(balls2, taskSelection.count);
-          updatePool();
-          after(0,()=>{ autoFitBalls(balls2); autoFitBalls(domeBalls); });
+          updateAll();
           els.btnFertig.disabled = false;
         }});
-        after(0,()=>autoFitBalls(domeBalls));
+        renderBallGroup(balls2, taskSelection.count, taskSelection.count>0 ? { onBallClick:(ev)=>{
+          // Ein zu viel eingefuelltes Bonbon zurueck in die Maschine legen.
+          ev.stopPropagation();
+          if(state.locked) return;
+          taskSelection.count--;
+          document.getElementById('t2buildnum').textContent = taskSelection.count;
+          updateAll();
+          els.btnFertig.disabled = taskSelection.count<=0;
+        }} : undefined);
+        after(0,()=>{ autoFitBalls(domeBalls); autoFitBalls(balls2); });
       }
-      updatePool();
+      updateAll();
       after(0, ()=>{ renderBallGroup(balls1, task.teil1); autoFitBalls(balls1); });
 
       els.btnFertig.onclick = () => {
